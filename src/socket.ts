@@ -1,4 +1,5 @@
 import * as io from 'socket.io';
+
 import { Events } from './events';
 
 export class Server {
@@ -13,23 +14,22 @@ export class Server {
     this.server.on('connection', socket => {
       console.log(`Client connected`);
 
-      this.players.push({ socket });
-      socket.on(Events.UserConnect, name => {
-        this.server.emit(Events.ServerPlayersUpdate, this.players.length);
-      });
+      const player = new Player(socket);
+      this.players.push(player);
+
+      this.server.emit(Events.ServerPlayersUpdate, this.getPlayers());
 
       socket.on('disconnect', () => {
-        console.log(`Client disconnected`);
-        const i = this.players.findIndex(
-          player => player.socket.id === socket.id,
-        );
-        this.players.splice(i, 1);
-        this.server.emit(Events.ServerPlayersUpdate, this.players.length);
+        this.server.emit(Events.ServerPlayersUpdate, this.getPlayers());
       });
     });
   }
+
+  getPlayers() {
+    return this.players.map(p => p.socket.id);
+  }
 }
 
-interface Player {
-  socket: io.Socket;
+class Player {
+  constructor(public socket: io.Socket) {}
 }
