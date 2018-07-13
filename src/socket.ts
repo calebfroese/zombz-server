@@ -12,18 +12,24 @@ export class Server {
     this.server = io.listen(this.port);
     this.server.on('connection', socket => {
       console.log(`Client connected`);
-      this.listenForEvents(socket);
-    });
-  }
 
-  listenForEvents(socket: io.Socket) {
-    socket.on(Events.UserConnect, name => {
-      this.players.push({ name });
-      this.server.emit(Events.ServerPlayersUpdate, this.players);
+      this.players.push({ socket });
+      socket.on(Events.UserConnect, name => {
+        this.server.emit(Events.ServerPlayersUpdate, this.players.length);
+      });
+
+      socket.on('disconnect', () => {
+        console.log(`Client disconnected`);
+        const i = this.players.findIndex(
+          player => player.socket.id === socket.id,
+        );
+        this.players.splice(i, 1);
+        this.server.emit(Events.ServerPlayersUpdate, this.players.length);
+      });
     });
   }
 }
 
 interface Player {
-  name: string;
+  socket: io.Socket;
 }
