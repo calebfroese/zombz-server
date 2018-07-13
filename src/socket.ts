@@ -20,6 +20,8 @@ export class Server {
       this.server.emit(Events.ServerPlayersUpdate, this.getPlayers());
 
       socket.on('disconnect', () => {
+        const i = this.players.findIndex(p => p.socket.id === socket.id);
+        this.players.splice(i, 1);
         this.server.emit(Events.ServerPlayersUpdate, this.getPlayers());
       });
     });
