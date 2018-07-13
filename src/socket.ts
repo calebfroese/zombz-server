@@ -26,16 +26,16 @@ export class Server {
       const [movement] = data;
       const { up, down, left, right } = movement;
       if (down) {
-        player.position.y += 1;
+        player.position.y += 3;
       }
       if (up) {
-        player.position.y -= 1;
+        player.position.y -= 3;
       }
       if (left) {
-        player.position.x -= 1;
+        player.position.x -= 3;
       }
       if (right) {
-        player.position.x += 1;
+        player.position.x += 3;
       }
       this.updatePlayers();
     });
