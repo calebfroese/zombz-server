@@ -2,13 +2,16 @@ import * as socket from 'socket.io';
 import { Events } from './events';
 
 export class Server {
-  static port = 5000;
   server: socket.Server;
   players: Player[] = [];
 
-  start() {
-    this.server = socket.listen(5000);
+  constructor(public port: number) {}
+
+  boot() {
+    console.log(`Server booted and accepting connections on :${this.port}`);
+    this.server = socket.listen(this.port);
     this.server.on('connection', socket => {
+      console.log(`Client connected`);
       this.listenForEvents(socket);
     });
   }
