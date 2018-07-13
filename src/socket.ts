@@ -18,8 +18,27 @@ export class Server {
     console.log(`Client connected`);
 
     const player = new Player(socket);
+    player.position = { x: 500, y: 500 };
     this.players.push(player);
     this.updatePlayers();
+
+    socket.on(Events.UserUpdate, data => {
+      const [movement] = data;
+      const { up, down, left, right } = movement;
+      if (down) {
+        player.position.y += 1;
+      }
+      if (up) {
+        player.position.y -= 1;
+      }
+      if (left) {
+        player.position.x -= 1;
+      }
+      if (right) {
+        player.position.x += 1;
+      }
+      this.updatePlayers();
+    });
 
     socket.on('disconnect', () => {
       const i = this.players.findIndex(p => p.socket.id === socket.id);
@@ -31,11 +50,15 @@ export class Server {
   updatePlayers() {
     this.server.emit(
       Events.ServerPlayersUpdate,
-      this.players.map(p => p.socket.id),
+      this.players.map(p => ({
+        id: p.socket.id,
+        position: p.position,
+      })),
     );
   }
 }
 
 class Player {
+  position: { x: number; y: number };
   constructor(public socket: io.Socket) {}
 }
