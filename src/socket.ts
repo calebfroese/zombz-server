@@ -1,25 +1,25 @@
-import * as socket from 'socket.io';
+import * as io from 'socket.io';
 import { Events } from './events';
 
 export class Server {
-  server: socket.Server;
+  server: io.Server;
   players: Player[] = [];
 
   constructor(public port: number) {}
 
   boot() {
     console.log(`Server booted and accepting connections on :${this.port}`);
-    this.server = socket.listen(this.port);
+    this.server = io.listen(this.port);
     this.server.on('connection', socket => {
       console.log(`Client connected`);
       this.listenForEvents(socket);
     });
   }
 
-  listenForEvents(socket: socket.Socket) {
+  listenForEvents(socket: io.Socket) {
     socket.on(Events.UserConnect, name => {
       this.players.push({ name });
-      socket.emit(Events.ServerPlayersUpdate, this.players);
+      this.server.emit(Events.ServerPlayersUpdate, this.players);
     });
   }
 }
