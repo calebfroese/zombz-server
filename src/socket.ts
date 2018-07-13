@@ -11,24 +11,28 @@ export class Server {
   boot() {
     console.log(`Server booted and accepting connections on :${this.port}`);
     this.server = io.listen(this.port);
-    this.server.on('connection', socket => {
-      console.log(`Client connected`);
+    this.server.on('connection', socket => this.onClient(socket));
+  }
 
-      const player = new Player(socket);
-      this.players.push(player);
+  onClient(socket: io.Socket) {
+    console.log(`Client connected`);
 
-      this.server.emit(Events.ServerPlayersUpdate, this.getPlayers());
+    const player = new Player(socket);
+    this.players.push(player);
+    this.updatePlayers();
 
-      socket.on('disconnect', () => {
-        const i = this.players.findIndex(p => p.socket.id === socket.id);
-        this.players.splice(i, 1);
-        this.server.emit(Events.ServerPlayersUpdate, this.getPlayers());
-      });
+    socket.on('disconnect', () => {
+      const i = this.players.findIndex(p => p.socket.id === socket.id);
+      this.players.splice(i, 1);
+      this.updatePlayers();
     });
   }
 
-  getPlayers() {
-    return this.players.map(p => p.socket.id);
+  updatePlayers() {
+    this.server.emit(
+      Events.ServerPlayersUpdate,
+      this.players.map(p => p.socket.id),
+    );
   }
 }
 
